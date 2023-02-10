@@ -1,7 +1,7 @@
 # -*- coding: utf-8-*-
-import Queue
+import queue
 import atexit
-from modules import Gmail
+from client.modules import Gmail
 from apscheduler.schedulers.background import BackgroundScheduler
 import logging
 
@@ -19,7 +19,7 @@ class Notifier(object):
 
     def __init__(self, profile):
         self._logger = logging.getLogger(__name__)
-        self.q = Queue.Queue()
+        self.q = queue.Queue()
         self.profile = profile
         self.notifiers = []
 
@@ -57,7 +57,7 @@ class Notifier(object):
         try:
             notif = self.q.get(block=False)
             return notif
-        except Queue.Empty:
+        except queue.Empty:
             return None
 
     def getAllNotifications(self):

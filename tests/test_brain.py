@@ -42,7 +42,7 @@ class TestBrain(unittest.TestCase):
         """Does Brain correctly send query to higher-priority module?"""
         my_brain = TestBrain._emptyBrain()
         hn_module = 'HN'
-        hn = filter(lambda m: m.__name__ == hn_module, my_brain.modules)[0]
+        hn = filter(lambda m: m.__name__ == hn_module, my_brain.modules)
 
         with mock.patch.object(hn, 'handle') as mocked_handle:
             my_brain.query(["hacker news"])

@@ -16,10 +16,14 @@ import shutil
 from abc import ABCMeta, abstractmethod, abstractproperty
 import yaml
 
-import brain
-import jasperpath
-
-from g2p import PhonetisaurusG2P
+from client import brain
+from client import jasperpath
+try:
+    from g2p import PhonetisaurusG2P
+except ImportError:
+    logging.getLogger(__name__).error("Error importing PhonetisaurusG2P module. " +
+                                      "PocketsphinxVocabulary will not work " +
+                                      "correctly.", exc_info=True)
 try:
     import cmuclmtk
 except ImportError:

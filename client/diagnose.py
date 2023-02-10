@@ -6,8 +6,21 @@ import socket
 import subprocess
 import pkgutil
 import logging
-import pip.req
-import jasperpath
+try:
+    # pip >=20
+    from pip._internal.network.session import PipSession
+    from pip._internal.req import parse_requirements
+except ImportError:
+    try:
+        # 10.0.0 <= pip <= 19.3.1
+        from pip._internal.download import PipSession
+        from pip._internal.req import parse_requirements
+    except ImportError:
+        # pip <= 9.0.3
+        from pip.download import PipSession
+        from pip.req import parse_requirements
+
+from client import jasperpath
 if sys.version_info < (3, 3):
     from distutils.spawn import find_executable
 else:
@@ -104,8 +117,8 @@ def get_pip_requirements(fname=os.path.join(jasperpath.LIB_PATH,
     """
     logger = logging.getLogger(__name__)
     if os.access(fname, os.R_OK):
-        reqs = list(pip.req.parse_requirements(fname))
-        logger.debug("Found %d PIP requirements in file '%s'", len(reqs),
+        reqs = parse_requirements(fname, session=PipSession())
+        logger.debug("Found %d PIP requirements in file '%s'", len(list(reqs)),
                      fname)
         return reqs
     else:

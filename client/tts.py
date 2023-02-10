@@ -8,6 +8,7 @@ Speaker methods:
     is_available - returns True if the platform supports this implementation
 """
 import os
+from client import jasperpath
 import platform
 import re
 import tempfile
@@ -16,7 +17,7 @@ import pipes
 import logging
 import wave
 import urllib
-import urlparse
+from urllib import parse
 import requests
 from abc import ABCMeta, abstractmethod
 
@@ -38,8 +39,8 @@ try:
 except ImportError:
     pass
 
-import diagnose
-import jasperpath
+from client import diagnose
+
 
 
 class AbstractTTSEngine(object):
@@ -100,7 +101,7 @@ class AbstractMp3TTSEngine(AbstractTTSEngine):
             wav.setframerate(mf.samplerate())
             wav.setnchannels(1 if mf.mode() == mad.MODE_SINGLE_CHANNEL else 2)
             # 4L is the sample width of 32 bit audio
-            wav.setsampwidth(4L)
+            wav.setsampwidth(4*L)
             frame = mf.read()
             while frame is not None:
                 wav.writeframes(frame)
@@ -542,7 +543,7 @@ class MaryTTS(AbstractTTSEngine):
     def _makeurl(self, path, query={}):
         query_s = urllib.urlencode(query)
         urlparts = ('http', self.netloc, path, query_s, '')
-        return urlparse.urlunsplit(urlparts)
+        return parse.urlunsplit(urlparts)
 
     def say(self, phrase):
         self._logger.debug("Saying '%s' with '%s'", phrase, self.SLUG)
@@ -651,8 +652,8 @@ def get_engine_by_slug(slug=None):
     if not slug or type(slug) is not str:
         raise TypeError("Invalid slug '%s'", slug)
 
-    selected_engines = filter(lambda engine: hasattr(engine, "SLUG") and
-                              engine.SLUG == slug, get_engines())
+    selected_engines = list(filter(lambda engine: hasattr(engine, "SLUG") and
+                              engine.SLUG == slug, get_engines()))
     if len(selected_engines) == 0:
         raise ValueError("No TTS engine found for slug '%s'" % slug)
     else:
