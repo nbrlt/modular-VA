@@ -116,7 +116,7 @@ class Mic:
         lastN = [i for i in range(30)]
 
         # calculate the long run average, and thereby the proper threshold
-        for i in range(0, RATE / CHUNK * THRESHOLD_TIME):
+        for i in range(0, int(RATE / CHUNK * THRESHOLD_TIME)):
 
             data = stream.read(CHUNK)
             frames.append(data)
@@ -136,7 +136,7 @@ class Mic:
         didDetect = False
 
         # start passively listening for disturbance above threshold
-        for i in range(0, RATE / CHUNK * LISTEN_TIME):
+        for i in range(0, int(RATE / CHUNK * LISTEN_TIME)):
 
             data = stream.read(CHUNK)
             frames.append(data)
@@ -158,7 +158,7 @@ class Mic:
 
         # otherwise, let's keep recording for few seconds and save the file
         DELAY_MULTIPLIER = 1
-        for i in range(0, RATE / CHUNK * DELAY_MULTIPLIER):
+        for i in range(0, int(RATE / CHUNK * DELAY_MULTIPLIER)):
 
             data = stream.read(CHUNK)
             frames.append(data)
@@ -172,7 +172,7 @@ class Mic:
             wav_fp.setnchannels(1)
             wav_fp.setsampwidth(pyaudio.get_sample_size(pyaudio.paInt16))
             wav_fp.setframerate(RATE)
-            wav_fp.writeframes(''.join(frames))
+            wav_fp.writeframes(b''.join(frames))
             wav_fp.close()
             f.seek(0)
             # check if PERSONA was said
@@ -224,7 +224,7 @@ class Mic:
         # generation
         lastN = [THRESHOLD * 1.2 for i in range(30)]
 
-        for i in range(0, RATE / CHUNK * LISTEN_TIME):
+        for i in range(0, int(RATE / CHUNK * LISTEN_TIME)):
 
             data = stream.read(CHUNK)
             frames.append(data)
@@ -250,7 +250,7 @@ class Mic:
             wav_fp.setnchannels(1)
             wav_fp.setsampwidth(pyaudio.get_sample_size(pyaudio.paInt16))
             wav_fp.setframerate(RATE)
-            wav_fp.writeframes(''.join(frames))
+            wav_fp.writeframes(b''.join(frames))
             wav_fp.close()
             f.seek(0)
             return self.active_stt_engine.transcribe(f)
