@@ -1,6 +1,8 @@
 # The MIT License (MIT)
 
-*Copyright (c) 2014-2015 Charles Marsh, Shubhro Saha & Jan Holthuis*
+*Copyright (c) 2023 Nicolas Bourlet*
+
+*Copyright (c) 2014-2015 Charles Marsh, Shubhro Saha, Jan Holthuis and the authors of project Jasper (see AUTHORS_JASPER.md)*
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
