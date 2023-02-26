@@ -4,7 +4,16 @@ from email.mime.text import MIMEText
 import urllib
 import re
 from pytz import timezone
+import os
+import yaml
+from client import jasperpath
 
+def get_profile():
+    profile_path = jasperpath.config('profile.yml')
+    if os.path.exists(profile_path):
+        with open(profile_path, 'r') as f:
+            profile = yaml.safe_load(f)
+    return profile
 
 def sendEmail(SUBJECT, BODY, TO, FROM, SENDER, PASSWORD, SMTP_SERVER):
     """Sends an HTML email."""

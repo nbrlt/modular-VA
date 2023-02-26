@@ -14,6 +14,7 @@ from client import stt
 from client import jasperpath
 from client import diagnose
 from client.conversation import Conversation
+from client.app_utils import get_profile
 
 # Add jasperpath.LIB_PATH to sys.path
 sys.path.append(jasperpath.LIB_PATH)
@@ -53,48 +54,20 @@ class Jasper(object):
                                   "won't work correctly.",
                                   jasperpath.CONFIG_PATH)
 
-        # FIXME: For backwards compatibility, move old config file to newly
-        #        created config dir
-        old_configfile = os.path.join(jasperpath.LIB_PATH, 'profile.yml')
-        new_configfile = jasperpath.config('profile.yml')
-        if os.path.exists(old_configfile):
-            if os.path.exists(new_configfile):
-                self._logger.warning("Deprecated profile file found: '%s'. " +
-                                     "Please remove it.", old_configfile)
-            else:
-                self._logger.warning("Deprecated profile file found: '%s'. " +
-                                     "Trying to copy it to new location '%s'.",
-                                     old_configfile, new_configfile)
-                try:
-                    shutil.copy2(old_configfile, new_configfile)
-                except shutil.Error:
-                    self._logger.error("Unable to copy config file. " +
-                                       "Please copy it manually.",
-                                       exc_info=True)
-                    raise
 
         # Read config
-        self._logger.debug("Trying to read config file: '%s'", new_configfile)
+        self.config = get_profile()
         try:
-            with open(new_configfile, "r") as f:
-                self.config = yaml.safe_load(f)
-        except OSError:
-            self._logger.error("Can't open config file: '%s'", new_configfile)
-            raise
-
+            self.persona = self.config["persona"]
+        except:
+            self.persona = "JASPER"
         try:
             stt_engine_slug = self.config['stt_engine']
         except KeyError:
-            stt_engine_slug = 'sphinx'
+            stt_engine_slug = 'whisper'
             logger.warning("stt_engine not specified in profile, defaulting " +
                            "to '%s'", stt_engine_slug)
         stt_engine_class = stt.get_engine_by_slug(stt_engine_slug)
-
-        try:
-            slug = self.config['stt_passive_engine']
-            stt_passive_engine_class = stt.get_engine_by_slug(slug)
-        except KeyError:
-            stt_passive_engine_class = stt_engine_class
 
         try:
             tts_engine_slug = self.config['tts_engine']
@@ -102,12 +75,11 @@ class Jasper(object):
             tts_engine_slug = tts.get_default_engine_slug()
             logger.warning("tts_engine not specified in profile, defaulting " +
                            "to '%s'", tts_engine_slug)
+
         tts_engine_class = tts.get_engine_by_slug(tts_engine_slug)
 
         # Initialize Mic
-        self.mic = Mic(tts_engine_class.get_instance(),
-                       stt_passive_engine_class.get_passive_instance(),
-                       stt_engine_class.get_active_instance())
+        self.mic = Mic(tts_engine_class(), stt_engine_class(self.config))
 
     def run(self):
         if 'first_name' in self.config:
@@ -117,13 +89,16 @@ class Jasper(object):
             salutation = "How can I be of service?"
         self.mic.say(salutation)
 
-        conversation = Conversation("JASPER", self.mic, self.config)
+        conversation = Conversation(self.persona, self.mic, self.config)
         conversation.handleForever()
 
 if __name__ == "__main__":
 
     print("*******************************************************")
-    print("*             JASPER - THE TALKING COMPUTER           *")
+    print("*                  Modular-VA                         *")
+    print("*          A modular voice assistant                  *")
+    print("*          (c) 2023 Nicolas Bourlet                   *")
+    print("*          Forked from Japer-client                   *")
     print("* (c) 2015 Shubhro Saha, Charlie Marsh & Jan Holthuis *")
     print("*******************************************************")
 

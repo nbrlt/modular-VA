@@ -2,6 +2,7 @@
 import logging
 from client.notifier import Notifier
 from client.brain import Brain
+import speech_recognition as sr
 
 
 class Conversation(object):
@@ -18,32 +19,25 @@ class Conversation(object):
         """
         Delegates user input to the handling function when activated.
         """
-        self._logger.info("Starting to handle conversation with keyword '%s'.",
-                          self.persona)
+        self._logger.info("Starting to handle conversation with keyword '%s'.",self.persona)
         while True:
             # Print notifications until empty
             notifications = self.notifier.getAllNotifications()
             for notif in notifications:
                 self._logger.info("Received notification: '%s'", str(notif))
 
-            self._logger.debug("Started listening for keyword '%s'",
-                               self.persona)
-            threshold, transcribed = self.mic.passiveListen(self.persona)
-            self._logger.debug("Stopped listening for keyword '%s'",
-                               self.persona)
+            self._logger.debug("Started listening")
 
-            if not transcribed or not threshold:
-                self._logger.info("Nothing has been said or transcribed.")
+            try:
+                input = self.mic.listen()
+            except sr.WaitTimeoutError:
+                self._logger.debug("Nothing has been said")
                 continue
-            self._logger.info("Keyword '%s' has been said!", self.persona)
 
-            self._logger.debug("Started to listen actively with threshold: %r",
-                               threshold)
-            input = self.mic.activeListenToAllOptions(threshold)
-            self._logger.debug("Stopped to listen actively with threshold: %r",
-                               threshold)
+            self._logger.debug("Stopped listening, heared:" + input)
 
-            if input:
+            if self.persona in input:
+                self._logger.debug("Keyword said, processing input")
                 self.brain.query(input)
             else:
-                self.mic.say("Pardon?")
+                self._logger.debug("No keyword said")
